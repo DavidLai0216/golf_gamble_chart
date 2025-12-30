@@ -227,4 +227,90 @@
             skVal: parseInt(document.getElementById('skinVal').value)
         };
 
-        let res = [0,1,2,3
+        let res = [0,1,2,3].map(() => ({ vegas: 0, best: 0, scr: 0, skins: 0, total: 0 }));
+        let bPool = 0, skPool = 0;
+
+        for (let h=1; h<=18; h++) {
+            let sRaw = [], sNet = [], valid = true;
+            for (let p=0; p<4; p++) {
+                let v = document.querySelector(`.score-input[data-h="${h}"][data-p="${p}"]`).value;
+                if (v === "") { valid = false; break; }
+                let score = parseInt(v);
+                sRaw.push(score);
+                sNet.push(score - ((hdcpMap[h] && hdcpMap[h][p]) ? 1 : 0));
+            }
+            if (!valid) continue;
+            sRaw.forEach((v, i) => res[i].total += v);
+
+            // 1. Las Vegas [cite: 3, 20, 30]
+            if (cfg.lvg) {
+                let p;
+                if(cfg.lMode === 'fixed') p = [0,1,2,3];
+                else {
+                    const block = (cfg.lMode === '6') ? Math.ceil(h/6) : Math.ceil(h/9);
+                    const sel1 = document.querySelector(`#lvgP${block} .lv-p1`).value;
+                    const sel2 = document.querySelector(`#lvgP${block} .lv-p2`).value;
+                    const t1 = [parseInt(sel1), parseInt(sel2)];
+                    const t2 = [0,1,2,3].filter(i => !t1.includes(i));
+                    p = [...t1, ...t2];
+                }
+                let vA = Math.min(sNet[p[0]], sNet[p[1]])*10 + Math.max(sNet[p[0]], sNet[p[1]]);
+                let vB = Math.min(sNet[p[2]], sNet[p[3]])*10 + Math.max(sNet[p[2]], sNet[p[3]]);
+                if (cfg.lFlip && (vA < vB && [sNet[p[0]], sNet[p[1]]].some(s => s <= 3))) vB = (vB%10)*10 + Math.floor(vB/10);
+                else if (cfg.lFlip && (vB < vA && [sNet[p[2]], sNet[p[3]]].some(s => s <= 3))) vA = (vA%10)*10 + Math.floor(vA/10);
+                let diff = vB - vA;
+                res[p[0]].vegas += diff; res[p[1]].vegas += diff; res[p[2]].vegas -= diff; res[p[3]].vegas -= diff;
+            }
+
+            // 2. Best Ball 
+            if (cfg.best) {
+                bPool++;
+                let t1 = cfg.bT1, t2 = [0,1,2,3].filter(i => !t1.includes(i));
+                let b1 = Math.min(sNet[t1[0]], sNet[t1[1]]), b2 = Math.min(sNet[t2[0]], sNet[t2[1]]);
+                if (b1 < b2) { res[t1[0]].best += bPool; res[t1[1]].best += bPool; bPool = 0; }
+                else if (b2 < b1) { res[t2[0]].best += bPool; res[t2[1]].best += bPool; bPool = 0; }
+                else if (!cfg.bCarry) bPool = 0;
+            }
+
+            // 3. Scratch (史估垃幾) 
+            if (cfg.scr) {
+                if (cfg.sMode === 'all') {
+                    for(let i=0; i<4; i++) for(let j=i+1; j<4; j++) {
+                        if(sNet[i] < sNet[j]) { res[i].scr++; res[j].scr--; }
+                        else if(sNet[j] < sNet[i]) { res[j].scr++; res[i].scr--; }
+                    }
+                } else {
+                    let net1 = sNet[cfg.sP1], net2 = sNet[cfg.sP2];
+                    if (scrManualHoles.includes(h.toString())) {
+                        if (cfg.sReceiver === cfg.sP1) net1 -= 1; else if (cfg.sReceiver === cfg.sP2) net2 -= 1;
+                    }
+                    if(net1 < net2) { res[cfg.sP1].scr++; res[cfg.sP2].scr--; }
+                    else if(net2 < net1) { res[cfg.sP2].scr++; res[cfg.sP1].scr--; }
+                }
+            }
+
+            // 4. Skins [cite: 11, 14, 36]
+            if (cfg.skin) {
+                skPool++;
+                let min = Math.min(...sNet);
+                let wins = sNet.map((s, i) => s === min ? i : -1).filter(i => i !== -1);
+                if (wins.length === 1 && sNet[wins[0]] <= cfg.skVal) {
+                    res[wins[0]].skins += skPool; skPool = 0;
+                } else if (!cfg.skCarry) skPool = 0;
+            }
+        }
+
+        const sum = document.getElementById('sumBody');
+        sum.innerHTML = players.map((n, i) => `<tr>
+            <td>${n}</td>
+            <td class="${res[i].vegas>=0?'val-win':'val-lose'}">${res[i].vegas}</td>
+            <td class="win">${res[i].best}</td>
+            <td class="${res[i].scr>=0?'val-win':'val-lose'}">${res[i].scr}</td>
+            <td class="win">${res[i].skins}</td>
+            <td>${res[i].total}</td>
+        </tr>`).join('');
+    }
+    syncAll();
+</script>
+</body>
+</html>
