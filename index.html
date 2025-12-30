@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>⛳ 高球博弈終極客製版</title>
     <style>
-        :root { --primary: #1b5e20; --bg: #f4f7f6; --accent: #ef6c00; --win: #d32f2f; --lose: #1976d2; }
+        :root { --primary: #1b5e20; --bg: #f0f4f7; --accent: #ef6c00; --win: #d32f2f; --lose: #1976d2; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; font-size: 14px; }
         .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .hidden { display: none; }
@@ -13,10 +13,10 @@
         .config-box { background: #f9f9f9; border: 1px solid #ddd; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
         .player-inputs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 15px; }
         .player-inputs input { width: 100%; padding: 10px 5px; border: 1px solid #ccc; border-radius: 6px; text-align: center; font-weight: bold; box-sizing: border-box; }
-        select, input[type="text"].small-in { padding: 6px; border-radius: 6px; border: 1px solid #ccc; font-size: 13px; }
+        select { padding: 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 13px; margin: 5px 0; background: white; }
         .btn-confirm { background: var(--primary); color: white; border: none; width: 100%; padding: 18px; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; }
         
-        /* 讓桿洞表格 */
+        /* 18洞預設受讓表格 */
         .hdcp-table-wrapper { overflow-x: auto; margin-top: 10px; }
         .hdcp-table { width: 100%; border-collapse: collapse; min-width: 500px; }
         .hdcp-table th { background: #eee; font-size: 11px; padding: 4px; }
@@ -27,15 +27,15 @@
         table.main-table { width: 100%; border-collapse: collapse; min-width: 600px; }
         table.main-table th { background: var(--primary); color: white; padding: 8px; font-size: 13px; }
         table.main-table td { border: 1px solid #eee; padding: 8px 4px; text-align: center; }
-        .score-input { width: 50px; height: 35px; border: 1px solid #bbb; border-radius: 5px; text-align: center; font-size: 16px; font-weight: bold; }
+        .score-input { width: 60px; height: 35px; border: 1px solid #bbb; border-radius: 5px; text-align: center; font-size: 16px; font-weight: bold; }
         .hdcp-mark { color: var(--accent); font-weight: bold; font-size: 11px; display: block; }
         
+        /* 結算 */
         .summary-table { width: 100%; border-collapse: collapse; }
         .summary-table th { background: #455a64; color: white; padding: 8px; font-size: 12px; }
         .summary-table td { border: 1px solid #eee; padding: 12px 5px; text-align: center; font-weight: bold; }
         .val-win { color: var(--win); }
         .val-lose { color: var(--lose); }
-        .pair-row { margin-top: 8px; padding: 5px; background: #fff; border: 1px dashed #ccc; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -49,60 +49,51 @@
         <input type="text" id="p3" value="秀秀" oninput="syncAll()">
     </div>
 
-    <h2>2. 遊戲參數設定</h2>
+    <h2>2. 遊戲分組與規則設定</h2>
     
     <div class="config-box">
         <label><input type="checkbox" id="chkLvg" checked> 拉斯維加斯 (Las Vegas)</label>
         <div style="margin-left:22px;">
-            <label><input type="checkbox" id="lvgFlip" checked> 抓鳥翻牌</label><br>
-            分組邏輯：<select id="lvgMode" onchange="toggleLvgManual()">
+            <label><input type="checkbox" id="vFlip" checked> 抓鳥翻牌</label><br>
+            換隊規則：<select id="lvgMode" onchange="toggleLvgPairs()">
                 <option value="fixed">固定 (A+B vs C+D)</option>
                 <option value="6">每 6 洞換搭檔</option>
                 <option value="9">每 9 洞換搭檔</option>
             </select>
-            <div id="lvgManualBox" class="hidden">
-                <div id="lvgP1" class="pair-row"></div>
-                <div id="lvgP2" class="pair-row"></div>
-                <div id="lvgP3" class="pair-row"></div>
+            <div id="lvgManualPairing" class="hidden">
+                <div id="lvgP1" style="margin-top:5px;"></div>
+                <div id="lvgP2" style="margin-top:5px;"></div>
+                <div id="lvgP3" style="margin-top:5px;"></div>
             </div>
         </div>
     </div>
 
     <div class="config-box">
-        <label><input type="checkbox" id="chkBest" checked> 四人四球 (Best Ball)</label>
+        <label><input type="checkbox" id="chkFour" checked> 四人四球 (Best Ball)</label>
         <div style="margin-left:22px;">
-            <label><input type="checkbox" id="bestCarry" checked> 平手累積 (Carry Over)</label><br>
-            分組：<select id="bestT1_1" class="n-sel"></select> + <select id="bestT1_2" class="n-sel"></select> 為一組
+            <label><input type="checkbox" id="fCarry" checked> 平手累積 (Carry Over)</label><br>
+            成員分組：<select id="fP1" class="n-sel"></select> + <select id="fP2" class="n-sel"></select> 為一組
         </div>
     </div>
 
-    <div class="config-box" id="scrBox">
-        <label><input type="checkbox" id="chkScratch" checked> 史估垃幾 (Scratch)</label>
-        <div style="margin-left:22px;">
-            模式：<select id="scrMode" onchange="toggleScrSingle()">
-                <option value="all">全部對決 ($C_4^2$ 六組 PK)</option>
-                <option value="single">指定單挑</option>
-            </select>
-            <div id="scrSingleBox" class="hidden" style="margin-top:5px;">
-                對決：<select id="scrP1" class="n-sel"></select> vs <select id="scrP2" class="n-sel"></select><br>
-                讓分：<select id="scrGiver" class="n-sel"></select> 讓 <select id="scrReceiver" class="n-sel"></select><br>
-                讓桿洞號 (如 1,3,9)：<input type="text" id="scrHoles" class="small-in" style="width:120px;" placeholder="手動輸入洞號">
+    <div class="config-box">
+        <label><input type="checkbox" id="chkScr" checked> 史估垃幾 (Scratch)</label>
+        <div style="margin-left:22px;" id="scrDuelContainer">
             </div>
-        </div>
     </div>
 
     <div class="config-box">
         <label><input type="checkbox" id="chkSkins" checked> Skins (斯金茲)</label>
         <div style="margin-left:22px;">
-            <label><input type="checkbox" id="skinCarry" checked> 平手累積</label> | 
-            門檻：<select id="skinVal"><option value="4">Par</option><option value="5">Bogey</option><option value="99">不驗證</option></select>
+            <label><input type="checkbox" id="sCarry" checked> 平手累積</label> | 
+            驗證門檻：<select id="sVal"><option value="4">Par</option><option value="5">Bogey</option><option value="99">不驗證</option></select>
         </div>
     </div>
 
-    <h2>3. 預設全場讓桿表格 (勾選即該洞減 1 桿)</h2>
+    <h2>3. 預設全場讓桿表格</h2>
     <div class="hdcp-table-wrapper" id="hdcpTable"></div>
 
-    <button class="btn-confirm" onclick="startApp()">確認設定，進入成績卡 ⛳</button>
+    <button class="btn-confirm" onclick="startApp()">設定完成，開始擊球 ⛳</button>
 </div>
 
 <div id="gamePage" class="hidden">
@@ -128,34 +119,25 @@
 <script>
     let players = [];
     let hdcpMap = {};
-    let scrManualHoles = [];
 
     function syncAll() {
         players = [0,1,2,3].map(i => document.getElementById('p'+i).value);
+        
+        // 同步所有姓名下拉選單
         document.querySelectorAll('.n-sel').forEach((sel, idx) => {
             const oldVal = sel.value;
             sel.innerHTML = players.map((n, i) => `<option value="${i}">${n}</option>`).join('');
             if (oldVal !== "") sel.value = oldVal;
+            else { if(idx===0) sel.value = 0; if(idx===1) sel.value = 1; }
         });
-        
-        // 拉斯手動分組選單
-        const modes = {
-            "6": ["1-6洞", "7-12洞", "13-18洞"],
-            "9": ["1-9洞", "10-18洞"]
-        };
-        const currentMode = document.getElementById('lvgMode').value;
-        if(modes[currentMode]) {
-            modes[currentMode].forEach((label, i) => {
-                const div = document.getElementById('lvgP' + (i+1));
-                div.innerHTML = `${label} 分組：<select class="lv-p1 n-sel"></select> + <select class="lv-p2 n-sel"></select>`;
-                div.querySelectorAll('.n-sel').forEach((s, j) => {
-                    s.innerHTML = players.map((n, idx) => `<option value="${idx}">${n}</option>`).join('');
-                    if(j===0) s.value = 0; else s.value = (i+1 < 4 ? i+1 : 1);
-                });
-            });
-        }
 
-        // 預設讓桿表
+        // 生成 Las Vegas 手動選單
+        toggleLvgPairs();
+        
+        // 生成 6 組 Scillag 單挑
+        renderScillagDuels();
+
+        // 繪製 18 洞受讓表
         let hHtml = `<table class="hdcp-table"><thead><tr><th>洞</th>`;
         players.forEach(n => hHtml += `<th>${n}</th>`);
         hHtml += `</tr></thead><tbody>`;
@@ -167,14 +149,38 @@
         document.getElementById('hdcpTable').innerHTML = hHtml + `</tbody></table>`;
     }
 
-    function toggleLvgManual() {
-        const m = document.getElementById('lvgMode').value;
-        document.getElementById('lvgManualBox').classList.toggle('hidden', m === 'fixed');
-        syncAll();
+    function toggleLvgPairs() {
+        const mode = document.getElementById('lvgMode').value;
+        const box = document.getElementById('lvgManualPairing');
+        box.classList.toggle('hidden', mode === 'fixed');
+        if (mode !== 'fixed') {
+            const ranges = mode === "6" ? ["1-6 洞", "7-12 洞", "13-18 洞"] : ["1-9 洞", "10-18 洞"];
+            ranges.forEach((label, i) => {
+                const container = document.getElementById('lvgP' + (i+1));
+                container.innerHTML = `${label}：<select class="lv-sel" data-idx="${i}"></select> + <select class="lv-sel" data-idx="${i}"></select>`;
+                container.querySelectorAll('select').forEach((s, sIdx) => {
+                    s.innerHTML = players.map((n, pIdx) => `<option value="${pIdx}">${n}</option>`).join('');
+                    s.value = sIdx; 
+                });
+            });
+            for(let j=ranges.length+1; j<=3; j++) document.getElementById('lvgP'+j).innerHTML = '';
+        }
     }
 
-    function toggleScrSingle() {
-        document.getElementById('scrSingleBox').classList.toggle('hidden', document.getElementById('scrMode').value !== 'single');
+    function renderScillagDuels() {
+        const container = document.getElementById('scrDuelContainer');
+        if (container.children.length === 0) {
+            let html = '';
+            for (let i = 1; i <= 6; i++) {
+                html += `<div style="margin-bottom:5px;">對決 ${i}：<select class="scr-p1"></select> 對 <select class="scr-p2"></select></div>`;
+            }
+            container.innerHTML = html;
+        }
+        container.querySelectorAll('select').forEach((sel, idx) => {
+            const oldVal = sel.value;
+            sel.innerHTML = `<option value="-1">不使用</option>` + players.map((n, i) => `<option value="${i}">${n}</option>`).join('');
+            if (oldVal !== "") sel.value = oldVal;
+        });
     }
 
     function startApp() {
@@ -183,9 +189,6 @@
             if(!hdcpMap[c.dataset.h]) hdcpMap[c.dataset.h] = {};
             hdcpMap[c.dataset.h][c.dataset.p] = true;
         });
-        
-        const rawHoles = document.getElementById('scrHoles').value;
-        scrManualHoles = rawHoles.split(',').map(s => s.trim()).filter(s => s !== "");
 
         let head = '<th>洞</th>';
         players.forEach(n => head += `<th>${n}</th>`);
@@ -197,12 +200,13 @@
             const tr = document.createElement('tr');
             let cols = `<td><b>${h}</b></td>`;
             for (let p=0; p<4; p++) {
-                const isH = (hdcpMap[h] && hdcpMap[h][p]) ? '<span class="hdcp-mark">讓</span>' : '';
-                cols += `<td><input type="number" class="score-input" data-h="${h}" data-p="${p}" oninput="calc()"> ${isH}</td>`;
+                const mark = (hdcpMap[h] && hdcpMap[h][p]) ? '<span class="hdcp-mark">讓</span>' : '';
+                cols += `<td><input type="number" class="score-input" data-h="${h}" data-p="${p}" oninput="calc()"> ${mark}</td>`;
             }
             tr.innerHTML = cols;
             body.appendChild(tr);
         }
+
         document.getElementById('setupPage').classList.add('hidden');
         document.getElementById('gamePage').classList.remove('hidden');
         calc();
@@ -213,22 +217,17 @@
             lvg: document.getElementById('chkLvg').checked,
             lMode: document.getElementById('lvgMode').value,
             lFlip: document.getElementById('lvgFlip').checked,
-            best: document.getElementById('chkBest').checked,
-            bCarry: document.getElementById('bestCarry').checked,
-            bT1: [parseInt(document.getElementById('bestT1_1').value), parseInt(document.getElementById('bestT1_2').value)],
-            scr: document.getElementById('chkScratch').checked,
-            sMode: document.getElementById('scrMode').value,
-            sP1: parseInt(document.getElementById('scrP1').value),
-            sP2: parseInt(document.getElementById('scrP2').value),
-            sGiver: parseInt(document.getElementById('scrGiver').value),
-            sReceiver: parseInt(document.getElementById('scrReceiver').value),
+            four: document.getElementById('chkFour').checked,
+            fCarry: document.getElementById('fCarry').checked,
+            fT1: [parseInt(document.getElementById('fP1').value), parseInt(document.getElementById('fP2').value)],
+            scr: document.getElementById('chkScr').checked,
             skin: document.getElementById('chkSkins').checked,
-            skCarry: document.getElementById('skinCarry').checked,
-            skVal: parseInt(document.getElementById('skinVal').value)
+            sCarry: document.getElementById('sCarry').checked,
+            sVal: parseInt(document.getElementById('sVal').value)
         };
 
-        let res = [0,1,2,3].map(() => ({ vegas: 0, best: 0, scr: 0, skins: 0, total: 0 }));
-        let bPool = 0, skPool = 0;
+        let res = [0,1,2,3].map(() => ({ vegas: 0, best: 0, scillag: 0, skins: 0, total: 0 }));
+        let fPool = 0, skPool = 0;
 
         for (let h=1; h<=18; h++) {
             let sRaw = [], sNet = [], valid = true;
@@ -242,15 +241,14 @@
             if (!valid) continue;
             sRaw.forEach((v, i) => res[i].total += v);
 
-            // 1. Las Vegas [cite: 3, 20, 30]
+            // 1. Las Vegas
             if (cfg.lvg) {
                 let p;
                 if(cfg.lMode === 'fixed') p = [0,1,2,3];
                 else {
-                    const block = (cfg.lMode === '6') ? Math.ceil(h/6) : Math.ceil(h/9);
-                    const sel1 = document.querySelector(`#lvgP${block} .lv-p1`).value;
-                    const sel2 = document.querySelector(`#lvgP${block} .lv-p2`).value;
-                    const t1 = [parseInt(sel1), parseInt(sel2)];
+                    const blockIdx = cfg.lMode === "6" ? Math.ceil(h/6) - 1 : Math.ceil(h/9) - 1;
+                    const selects = document.querySelectorAll(`.lv-sel[data-idx="${blockIdx}"]`);
+                    const t1 = [parseInt(selects[0].value), parseInt(selects[1].value)];
                     const t2 = [0,1,2,3].filter(i => !t1.includes(i));
                     p = [...t1, ...t2];
                 }
@@ -262,41 +260,36 @@
                 res[p[0]].vegas += diff; res[p[1]].vegas += diff; res[p[2]].vegas -= diff; res[p[3]].vegas -= diff;
             }
 
-            // 2. Best Ball 
-            if (cfg.best) {
-                bPool++;
-                let t1 = cfg.bT1, t2 = [0,1,2,3].filter(i => !t1.includes(i));
+            // 2. Four Ball
+            if (cfg.four) {
+                fPool++;
+                const t1 = cfg.fT1, t2 = [0,1,2,3].filter(i => !t1.includes(i));
                 let b1 = Math.min(sNet[t1[0]], sNet[t1[1]]), b2 = Math.min(sNet[t2[0]], sNet[t2[1]]);
-                if (b1 < b2) { res[t1[0]].best += bPool; res[t1[1]].best += bPool; bPool = 0; }
-                else if (b2 < b1) { res[t2[0]].best += bPool; res[t2[1]].best += bPool; bPool = 0; }
-                else if (!cfg.bCarry) bPool = 0;
+                if (b1 < b2) { res[t1[0]].best += fPool; res[t1[1]].best += fPool; fPool = 0; }
+                else if (b2 < b1) { res[t2[0]].best += fPool; res[t2[1]].best += fPool; fPool = 0; }
+                else if (!cfg.fCarry) fPool = 0;
             }
 
-            // 3. Scratch (史估垃幾) 
+            // 3. Scillag (Scratch)
             if (cfg.scr) {
-                if (cfg.sMode === 'all') {
-                    for(let i=0; i<4; i++) for(let j=i+1; j<4; j++) {
-                        if(sNet[i] < sNet[j]) { res[i].scr++; res[j].scr--; }
-                        else if(sNet[j] < sNet[i]) { res[j].scr++; res[i].scr--; }
+                const p1s = document.querySelectorAll('.scr-p1'), p2s = document.querySelectorAll('.scr-p2');
+                for(let i=0; i<6; i++){
+                    const p1 = parseInt(p1s[i].value), p2 = parseInt(p2s[i].value);
+                    if(p1 !== -1 && p2 !== -1 && p1 !== p2){
+                        if(sNet[p1] < sNet[p2]) { res[p1].scillag++; res[p2].scillag--; }
+                        else if(sNet[p2] < sNet[p1]) { res[p2].scillag++; res[p1].scillag--; }
                     }
-                } else {
-                    let net1 = sNet[cfg.sP1], net2 = sNet[cfg.sP2];
-                    if (scrManualHoles.includes(h.toString())) {
-                        if (cfg.sReceiver === cfg.sP1) net1 -= 1; else if (cfg.sReceiver === cfg.sP2) net2 -= 1;
-                    }
-                    if(net1 < net2) { res[cfg.sP1].scr++; res[cfg.sP2].scr--; }
-                    else if(net2 < net1) { res[cfg.sP2].scr++; res[cfg.sP1].scr--; }
                 }
             }
 
-            // 4. Skins [cite: 11, 14, 36]
+            // 4. Skins
             if (cfg.skin) {
                 skPool++;
                 let min = Math.min(...sNet);
-                let wins = sNet.map((s, i) => s === min ? i : -1).filter(i => i !== -1);
-                if (wins.length === 1 && sNet[wins[0]] <= cfg.skVal) {
+                let wins = sNet.map((s, idx) => s === min ? idx : -1).filter(idx => idx !== -1);
+                if (wins.length === 1 && sNet[wins[0]] <= cfg.sVal) {
                     res[wins[0]].skins += skPool; skPool = 0;
-                } else if (!cfg.skCarry) skPool = 0;
+                } else if (!cfg.sCarry) skPool = 0;
             }
         }
 
@@ -305,7 +298,7 @@
             <td>${n}</td>
             <td class="${res[i].vegas>=0?'val-win':'val-lose'}">${res[i].vegas}</td>
             <td class="win">${res[i].best}</td>
-            <td class="${res[i].scr>=0?'val-win':'val-lose'}">${res[i].scr}</td>
+            <td class="${res[i].scillag>=0?'val-win':'val-lose'}">${res[i].scillag}</td>
             <td class="win">${res[i].skins}</td>
             <td>${res[i].total}</td>
         </tr>`).join('');
