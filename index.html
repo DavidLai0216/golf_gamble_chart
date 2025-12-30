@@ -3,107 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>台灣高球博弈成績卡 - 達人版</title>
+    <title>⛳ 台灣高球博弈成績卡 - 完整結算版</title>
     <style>
         :root { --primary: #2e7d32; --secondary: #f5f5f5; --accent: #ff9800; --text: #333; }
         body { font-family: -apple-system, "Segoe UI", sans-serif; background: #eaeff2; color: var(--text); margin: 0; padding: 10px; }
-        .container { max-width: 800px; margin: auto; }
+        .container { max-width: 900px; margin: auto; }
         .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         h2 { margin-top: 0; color: var(--primary); font-size: 1.2rem; border-bottom: 2px solid var(--secondary); padding-bottom: 8px; }
-        
-        /* 設定區 */
-        .config-section { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px; }
-        .player-inputs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 15px; }
-        .player-inputs input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; text-align: center; }
-
-        /* 表格區 */
+        .config-section { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px; background: #f9f9f9; padding: 10px; border-radius: 8px; }
+        .player-inputs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 10px; }
+        .player-inputs input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; text-align: center; font-weight: bold; }
         .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        table { width: 100%; border-collapse: collapse; min-width: 450px; background: white; }
+        table { width: 100%; border-collapse: collapse; min-width: 500px; }
         th, td { border: 1px solid #eee; padding: 6px 4px; text-align: center; font-size: 13px; }
-        th { background: var(--primary); color: white; position: sticky; top: 0; }
+        th { background: var(--primary); color: white; }
         .score-box { display: flex; flex-direction: column; gap: 4px; align-items: center; }
-        input[type="number"] { width: 35px; height: 28px; border: 1px solid #ccc; border-radius: 4px; text-align: center; font-size: 14px; }
-        .putt-in { background-color: #e8f5e9; } /* 推桿格淺綠色 */
-        
-        /* 讓桿按鈕 */
+        input[type="number"] { width: 40px; height: 30px; border: 1px solid #ccc; border-radius: 4px; text-align: center; font-size: 14px; }
+        .putt-in { background-color: #e8f5e9; } 
         .hdcp-btn { font-size: 10px; background: #eee; border: 1px solid #ccc; border-radius: 4px; padding: 2px 5px; cursor: pointer; }
         .hdcp-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
-
-        /* 結算區 */
         .summary-table th { background: #444; }
         .win { color: #d32f2f; font-weight: bold; }
         .lose { color: #1976d2; font-weight: bold; }
-        
-        .footer-note { font-size: 11px; color: #777; margin-top: 10px; line-height: 1.4; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="card">
-        <h2>⛳ 球賽基本設定</h2>
+        <h2>⛳ 球員與規則設定</h2>
         <div class="player-inputs">
-            <input type="text" id="p1_n" value="球員A" onchange="updateUI()">
-            <input type="text" id="p2_n" value="球員B" onchange="updateUI()">
-            <input type="text" id="p3_n" value="球員C" onchange="updateUI()">
-            <input type="text" id="p4_n" value="球員D" onchange="updateUI()">
+            <input type="text" id="p1_n" value="大未來" oninput="updateNames()">
+            <input type="text" id="p2_n" value="小星星" oninput="updateNames()">
+            <input type="text" id="p3_n" value="Teresa" oninput="updateNames()">
+            <input type="text" id="p4_n" value="秀秀" oninput="updateNames()">
         </div>
         <div class="config-section">
-            <div><label><input type="checkbox" id="cfg_vegas" checked onchange="calculate()"> 拉斯維加斯 (Las Vegas)</label></div>
-            <div><label><input type="checkbox" id="cfg_flip" checked onchange="calculate()"> 啟用「鳥翻」(Flip)</label></div>
-            <div><label><input type="checkbox" id="cfg_oly" checked onchange="calculate()"> 奧林匹克 (Olympics)</label></div>
-            <div>
-                換隊規則：
-                <select id="cfg_pair" onchange="calculate()">
-                    <option value="6">每 6 洞換搭檔</option>
-                    <option value="9">每 9 洞換搭檔</option>
-                    <option value="18">固定搭檔</option>
-                </select>
-            </div>
+            <div><label><input type="checkbox" id="cfg_vegas" checked onchange="calculate()"> 拉斯維加斯</label></div>
+            <div><label><input type="checkbox" id="cfg_flip" checked onchange="calculate()"> 抓鳥翻牌</label></div>
+            <div><label><input type="checkbox" id="cfg_oly" checked onchange="calculate()"> 奧林匹克</label></div>
+            <div>換隊：<select id="cfg_pair" onchange="calculate()"><option value="6">每 6 洞</option><option value="9">每 9 洞</option><option value="18">固定</option></select></div>
         </div>
     </div>
 
     <div class="card">
-        <h2>📊 18 洞成績輸入</h2>
         <div class="table-wrapper">
             <table>
-                <thead>
-                    <tr id="table_head_names">
-                        <th>洞</th>
-                        <th>A (桿/推)</th>
-                        <th>B (桿/推)</th>
-                        <th>C (桿/推)</th>
-                        <th>D (桿/推)</th>
-                    </tr>
-                </thead>
-                <tbody id="score_body">
-                    </tbody>
+                <thead><tr id="table_head"><th>洞</th><th>大未來</th><th>小星星</th><th>Teresa</th><th>秀秀</th></tr></thead>
+                <tbody id="score_body"></tbody>
             </table>
         </div>
     </div>
 
     <div class="card">
-        <h2>💰 即時結算總覽</h2>
-        <table class="summary-table">
-            <thead>
-                <tr>
-                    <th>球員</th>
-                    <th>拉斯點數</th>
-                    <th>奧林匹克</th>
-                    <th>總計</th>
-                </tr>
-            </thead>
-            <tbody id="summary_body">
-                </tbody>
+        <h2>💰 即時輸贏點數</h2>
+        <table>
+            <thead><tr><th>球員</th><th>拉斯點數</th><th>奧林匹克</th><th>總結計</th></tr></thead>
+            <tbody id="summary_body"></tbody>
         </table>
-        <div class="footer-note">
-            * 拉斯邏輯：桿數串聯（十位數為小桿，個位數為大桿）。<br>
-            * 鳥翻：獲勝隊有 Birdie 時，敗隊分數數字倒置。<br>
-            * 奧林匹克：需「一推」進洞才計分（金4、銀3、銅2、鐵1）。
-        </div>
     </div>
 </div>
 
 <script>
-    // 初始化 18 洞
-    const scoreBody = document.
+    const scoreBody = document.getElementById('score_body');
+    // 生成 18 洞
+    for (let h = 1; h <= 18; h++) {
+        const tr = document.createElement('tr');
+        let html = `<td><b>${h}</b></td>`;
+        for (let p = 0; p < 4; p++) {
+            html += `<td><div class="score-box">
+                <input type="number" class="s-in" data-h="${h}" data-p="${p}" placeholder="桿" oninput="calculate()">
+                <input type="number" class="p-in putt-in" data-h="${h}" data-p="${p}" placeholder="推" oninput="calculate()">
+                <button class="hdcp-btn" onclick="this.classList.toggle('active'); calculate();">讓</button>
+            </div></td>`;
+        }
+        tr.innerHTML = html;
+        scoreBody.appendChild(tr);
+    }
+
+    function updateNames() {
+        const names = [document.getElementById('p1_n').value, document.getElementById('p2_n').value, document.getElementById('p3_n').value, document.getElementById('p4_n').value];
+        const head = document.getElementById('table_head');
+        head.innerHTML = `<th>洞</th>` + names.map(n => `<th>${n}</th>`).join('');
+        calculate();
+    }
+
+    function calculate() {
+        const pairRule = parseInt(document.getElementById('cfg_pair').value);
+        const useVegas = document.getElementById('cfg_vegas').checked;
+        const useFlip = document.getElementById('cfg_flip').checked;
+        const useOly = document.getElementById('cfg_oly').checked;
+        let results = [0, 1, 2, 3].map(() => ({ vegas: 0, oly: 0 }));
+
+        for (let h = 1; h <= 18; h++) {
+            let scores = [], putts = [], valid = true;
+            for (let p = 0; p < 4; p++) {
+                let s = document.querySelector(`.s-in[data-h="${h}"][data-p="${p}"]`).value;
+                let pt = document.querySelector(`.p-in[data-h="${h}"][data-p="${p}"]`).value;
+                let isHdcp = document.querySelector(`.s-in[data-h="${h}"][data-p="${p}"]`).parentElement.querySelector('.hdcp-btn').classList.contains('active');
+                if (s === "") { valid = false; break; }
+                scores.push(parseInt(s) - (isHdcp ? 1 : 0));
+                putts.push(pt !== "" ? parseInt(pt) : 99);
+            }
+            if (!valid) continue;
+
+            // 拉斯邏輯 [cite: 3, 4, 5]
+            if (useVegas) {
+                let p = (h <= pairRule) ? [0,1,2,3] : (h <= pairRule*2 ? [0,2,1,3] : [0,3,1,2]);
+                let vA = Math.min(scores[p[0]], scores[p[1]])*10 + Math.max(scores[p[0]], scores[p[1]]);
+                let vB = Math.min(scores[p[2]], scores[p[3]])*10 + Math.max(scores[p[2]], scores[p[3]]);
+                if (useFlip) { // 鳥翻 [cite: 30]
+                    if (vA < vB && [scores[p[0]], scores[p[1]]].some(s => s <= 3)) vB = (vB%10)*10 + Math.floor(vB/10);
+                    else if (vB < vA && [scores[p[2]], scores[p[3]]].some(s => s <= 3)) vA = (vA%10)*10 + Math.floor(vA/10);
+                }
+                let diff = vB - vA;
+                results[p[0]].vegas += diff; results[p[1]].vegas += diff;
+                results[p[2]].vegas -= diff; results[p[3]].vegas -= diff;
+            }
+
+            // 奧林匹克 [cite: 6, 31, 32]
+            if (useOly) {
+                const pts = [4, 3, 2, 1];
+                putts.forEach((pt, i) => { if(pt === 1) results[i].oly += pts[i]; });
+            }
+        }
+
+        const names = [document.getElementById('p1_n').value, document.getElementById('p2_n').value, document.getElementById('p3_n').value, document.getElementById('p4_n').value];
+        document.getElementById('summary_body').innerHTML = names.map((n, i) => {
+            let total = results[i].vegas + results[i].oly;
+            return `<tr><td>${n}</td><td class="${results[i].vegas>=0?'win':'lose'}">${results[i].vegas}</td><td>${results[i].oly}</td><td class="${total>=0?'win':'lose'}">${total}</td></tr>`;
+        }).join('');
+    }
+    updateNames();
+</script>
+</body>
+</html>
