@@ -3,101 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>⛳ 高球博弈專業設定版</title>
+    <title>⛳ 高球博弈專業版 (斯金茲/全對決史估/累積四球)</title>
     <style>
-        :root { --primary: #1b5e20; --bg: #f0f4f7; --accent: #ef6c00; --win: #d32f2f; --lose: #1976d2; }
+        :root { --primary: #1b5e20; --bg: #f4f7f6; --accent: #ef6c00; --win: #d32f2f; --lose: #1976d2; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; font-size: 14px; }
         .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .hidden { display: none; }
-        h2 { color: var(--primary); font-size: 1.1rem; border-left: 5px solid var(--primary); padding-left: 10px; margin-top: 0; margin-bottom: 15px; }
+        h2 { color: var(--primary); font-size: 1.1rem; border-left: 5px solid var(--primary); padding-left: 10px; margin: 0 0 15px 0; }
         .config-box { background: #f9f9f9; border: 1px solid #ddd; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
         .player-inputs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 15px; }
         .player-inputs input { width: 100%; padding: 10px 5px; border: 1px solid #ccc; border-radius: 6px; text-align: center; font-weight: bold; box-sizing: border-box; }
-        select, button.setup-btn { padding: 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; }
+        select { padding: 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; width: 100%; max-width: 200px; }
         .btn-confirm { background: var(--primary); color: white; border: none; width: 100%; padding: 18px; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; }
         
-        /* 表格樣式 */
-        .table-wrapper { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; min-width: 600px; }
-        th, td { border: 1px solid #eee; padding: 6px; text-align: center; }
-        th { background: var(--primary); color: white; }
-        input[type="number"] { width: 50px; height: 35px; border: 1px solid #bbb; border-radius: 5px; text-align: center; font-size: 16px; }
-        .hdcp-mark { color: var(--accent); font-weight: bold; font-size: 12px; display: block; }
-        
-        /* 讓桿預設表樣式 */
-        .hdcp-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 2px; font-size: 10px; text-align: center; }
-        .hdcp-cell { border: 1px solid #ddd; padding: 2px; }
+        /* 18洞預設讓桿表格 */
+        .hdcp-table-wrapper { overflow-x: auto; margin-top: 10px; }
+        .hdcp-table { width: 100%; border-collapse: collapse; min-width: 600px; background: white; }
+        .hdcp-table th { background: #eee; font-size: 11px; padding: 4px; color: #555; }
+        .hdcp-table td { border: 1px solid #ddd; text-align: center; padding: 5px 2px; }
+        .hdcp-table input[type="checkbox"] { transform: scale(1.2); }
 
-        /* 結算 */
-        .val-win { color: var(--win); font-weight: bold; }
-        .val-lose { color: var(--lose); font-weight: bold; }
+        /* 主成績卡表格 */
+        .table-wrapper { overflow-x: auto; }
+        table.main-table { width: 100%; border-collapse: collapse; min-width: 500px; }
+        table.main-table th { background: var(--primary); color: white; padding: 8px; font-size: 13px; }
+        table.main-table td { border: 1px solid #eee; padding: 8px 4px; text-align: center; }
+        .score-input { width: 50px; height: 35px; border: 1px solid #bbb; border-radius: 5px; text-align: center; font-size: 16px; font-weight: bold; }
+        .hdcp-indicator { color: var(--accent); font-weight: bold; font-size: 11px; display: block; }
+        
+        /* 結算樣式 */
+        .summary-table { width: 100%; border-collapse: collapse; }
+        .summary-table th { background: #455a64; color: white; padding: 8px; }
+        .summary-table td { border: 1px solid #eee; padding: 12px 5px; text-align: center; font-weight: bold; }
+        .val-win { color: var(--win); }
+        .val-lose { color: var(--lose); }
     </style>
 </head>
 <body>
 
 <div id="setupPage" class="card">
-    <h2>1. 確認球員名稱 (請先輸入)</h2>
+    <h2>1. 填寫球員姓名</h2>
     <div class="player-inputs">
-        <input type="text" id="p0" value="大未來" oninput="syncNames()">
-        <input type="text" id="p1" value="小星星" oninput="syncNames()">
-        <input type="text" id="p2" value="Teresa" oninput="syncNames()">
-        <input type="text" id="p3" value="秀秀" oninput="syncNames()">
+        <input type="text" id="p0" value="大未來" oninput="syncSettings()">
+        <input type="text" id="p1" value="小星星" oninput="syncSettings()">
+        <input type="text" id="p2" value="Teresa" oninput="syncSettings()">
+        <input type="text" id="p3" value="秀秀" oninput="syncSettings()">
     </div>
 
-    <h2>2. 遊戲分組與參數設定</h2>
+    <h2>2. 遊戲分組與規則設定</h2>
     
     <div class="config-box">
-        <label style="font-weight:bold;"><input type="checkbox" id="chkLvg" checked> 拉斯維加斯 (Las Vegas)</label>
+        <label style="font-weight:bold;"><input type="checkbox" id="chkLvg" checked> 拉斯維加斯 (Las Vegas) [cite: 3]</label>
         <div style="margin: 10px 0 0 20px;">
-            <label><input type="checkbox" id="lvgFlip" checked> 抓鳥翻牌</label><br>
-            分組邏輯：<select id="lvgMode" onchange="toggleManualPair()">
-                <option value="6">每 6 洞換隊 (自動)</option>
-                <option value="9">每 9 洞換隊 (自動)</option>
-                <option value="manual">手動設定分組</option>
-            </select>
-            <div id="manualPairing" class="hidden" style="margin-top:5px; background:#fff; padding:5px; border:1px dashed #ccc;">
-                1-6洞: <span class="n0">A</span>+<span class="n1">B</span> vs <span class="n2">C</span>+<span class="n3">D</span><br>
-                7-12洞: <span class="n0">A</span>+<span class="n2">C</span> vs <span class="n1">B</span>+<span class="n3">D</span><br>
-                13-18洞: <span class="n0">A</span>+<span class="n3">D</span> vs <span class="n1">B</span>+<span class="n2">C</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="config-box">
-        <label style="font-weight:bold;"><input type="checkbox" id="chkBest"> 四人四球 (Best Ball)</label>
-        <div style="margin: 10px 0 0 20px;">
-            隊伍一：<select id="bestT1_1" class="n-select"></select> + <select id="bestT1_2" class="n-select"></select>
-        </div>
-    </div>
-
-    <div class="config-box">
-        <label style="font-weight:bold;"><input type="checkbox" id="chkSkins"> Skins (斯金茲)</label>
-        <div style="margin: 10px 0 0 20px;">
-            <label><input type="checkbox" id="sCarry" checked> 平手累積 (Carry Over)</label><br>
-            驗證門檻：<select id="sVal"><option value="4">Par</option><option value="5">Bogey</option><option value="99">不驗證</option></select>
-        </div>
-    </div>
-
-    <div class="config-box">
-        <label style="font-weight:bold;"><input type="checkbox" id="chkScr"> Scratch (史估垃幾)</label>
-        <div style="margin: 10px 0 0 20px;">
-            模式：<select id="scrMode">
-                <option value="all">全部對決 (Full Duel)</option>
-                <option value="single">單挑 (需另選對象)</option>
+            <label><input type="checkbox" id="vFlip" checked> 抓鳥翻牌 (Flip) [cite: 5, 17]</label><br>
+            分組邏輯：<select id="vMode">
+                <option value="6">每 6 洞自動換隊 </option>
+                <option value="9">每 9 洞自動換隊 </option>
+                <option value="fixed">固定分組 (A+B 對 C+D)</option>
             </select>
         </div>
     </div>
 
-    <h2>3. 預設讓桿洞 (直接勾選)</h2>
-    <div id="hdcpPreSet"></div>
+    <div class="config-box">
+        <label style="font-weight:bold;"><input type="checkbox" id="chkFour" checked> 四人四球 (Best Ball) [cite: 15]</label>
+        <div style="margin: 10px 0 0 20px;">
+            <label><input type="checkbox" id="fCarry" checked> 平手累積 (Carry Over) </label><br>
+            第一組成員：<select id="fP1" class="name-sel"></select> + <select id="fP2" class="name-sel"></select>
+        </div>
+    </div>
 
-    <button class="btn-confirm" onclick="startApp()">設定完成，進入成績卡 ⛳</button>
+    <div class="config-box">
+        <label style="font-weight:bold;"><input type="checkbox" id="chkSkins" checked> Skins (斯金茲) [cite: 11]</label>
+        <div style="margin: 10px 0 0 20px;">
+            <label><input type="checkbox" id="sCarry" checked> 平手累積 (Carry Over) </label><br>
+            驗證門檻：<select id="sVal">
+                <option value="4">Par (4桿) </option>
+                <option value="5">Bogey (5桿)</option>
+                <option value="99">不驗證</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="config-box">
+        <label style="font-weight:bold;"><input type="checkbox" id="chkScr" checked> 史估垃幾 (Scratch - 全對決) </label>
+        <div style="margin: 10px 0 0 20px;">
+            模式：$C_4^2$ 全部對決 (每洞與其他三人分別 PK) 
+        </div>
+    </div>
+
+    <h2>3. 預設讓桿洞 (勾選後自動適用史估垃幾) </h2>
+    <div class="hdcp-table-wrapper" id="hdcpGrid"></div>
+
+    <button class="btn-confirm" onclick="startApp()">設定完成，開始擊球 ⛳</button>
 </div>
 
 <div id="gamePage" class="hidden">
     <div class="card" style="padding: 5px;">
         <div class="table-wrapper">
-            <table>
+            <table class="main-table">
                 <thead><tr id="tHead"></tr></thead>
                 <tbody id="tBody"></tbody>
             </table>
@@ -105,77 +108,69 @@
     </div>
 
     <div class="card">
-        <h2>💰 即時結算總覽</h2>
-        <table>
-            <thead><tr><th>球員</th><th>拉斯</th><th>Skins</th><th>四人四球</th><th>史估垃幾</th><th>總桿</th></tr></thead>
+        <h2>💰 分項累積勝負結算</h2>
+        <table class="summary-table">
+            <thead><tr><th>球員</th><th>拉斯</th><th>Skins</th><th>四球</th><th>史估</th><th>總桿</th></tr></thead>
             <tbody id="sumBody"></tbody>
         </table>
     </div>
-    <button onclick="location.reload()" style="width:100%; background:#999; color:white; border:none; padding:10px; border-radius:8px;">返回重新設定</button>
+    <button onclick="location.reload()" style="width:100%; background:#999; color:white; border:none; padding:12px; border-radius:8px;">重新設定</button>
 </div>
 
 <script>
     let players = [];
-    let hdcpMap = {};
+    let hdcpData = {};
 
-    function syncNames() {
+    function syncSettings() {
         players = [0,1,2,3].map(i => document.getElementById('p'+i).value);
-        document.querySelectorAll('.n0').forEach(e => e.innerText = players[0]);
-        document.querySelectorAll('.n1').forEach(e => e.innerText = players[1]);
-        document.querySelectorAll('.n2').forEach(e => e.innerText = players[2]);
-        document.querySelectorAll('.n3').forEach(e => e.innerText = players[3]);
         
-        // 更新 Best Ball 下拉選單
-        const selects = document.querySelectorAll('.n-select');
-        selects.forEach((sel, i) => {
-            const currentVal = sel.value;
+        // 同步四人四球下拉選單
+        const sels = document.querySelectorAll('.name-sel');
+        sels.forEach((sel, i) => {
+            const oldVal = sel.value;
             sel.innerHTML = players.map((n, idx) => `<option value="${idx}">${n}</option>`).join('');
-            if (currentVal !== "") sel.value = currentVal;
-            else if (sel.id === "bestT1_1") sel.value = 0;
-            else if (sel.id === "bestT1_2") sel.value = 1;
+            if (oldVal !== "") sel.value = oldVal;
+            else { if (i===0) sel.value = 0; if (i===1) sel.value = 1; }
         });
-    }
 
-    function renderHdcpGrid() {
-        let html = '<div class="hdcp-grid">';
-        for (let p = 0; p < 4; p++) {
-            html += `<div style="grid-column: span 10; background:#eee; font-weight:bold; margin-top:5px;">${players[p]} 的受讓洞</div>`;
-            for (let h = 1; h <= 18; h++) {
-                html += `<div class="hdcp-cell">${h}<br><input type="checkbox" class="h-check" data-p="${p}" data-h="${h}"></div>`;
+        // 繪製讓桿表格
+        let hHtml = `<table class="hdcp-table"><thead><tr><th>洞</th>`;
+        players.forEach(n => hHtml += `<th>${n}</th>`);
+        hHtml += `</tr></thead><tbody>`;
+        for (let h = 1; h <= 18; h++) {
+            hHtml += `<tr><td><b>${h}</b></td>`;
+            for (let p = 0; p < 4; p++) {
+                hHtml += `<td><input type="checkbox" class="h-chk" data-p="${p}" data-h="${h}"></td>`;
             }
+            hHtml += `</tr>`;
         }
-        html += '</div>';
-        document.getElementById('hdcpPreSet').innerHTML = html;
-    }
-
-    function toggleManualPair() {
-        const mode = document.getElementById('lvgMode').value;
-        document.getElementById('manualPairing').classList.toggle('hidden', mode !== 'manual');
+        hHtml += `</tbody></table>`;
+        document.getElementById('hdcpGrid').innerHTML = hHtml;
     }
 
     function startApp() {
-        // 紀錄讓桿設定
-        hdcpMap = {};
-        document.querySelectorAll('.h-check:checked').forEach(ck => {
-            const p = ck.getAttribute('data-p'), h = ck.getAttribute('data-h');
-            if(!hdcpMap[h]) hdcpMap[h] = {};
-            hdcpMap[h][p] = true;
+        // 抓取讓桿資料
+        hdcpData = {};
+        document.querySelectorAll('.h-chk:checked').forEach(c => {
+            const h = c.dataset.h, p = c.dataset.p;
+            if(!hdcpData[h]) hdcpData[h] = {};
+            hdcpData[h][p] = true;
         });
 
-        // 生成表頭
-        let headHtml = '<th>洞</th>';
-        players.forEach(n => headHtml += `<th>${n}</th>`);
-        document.getElementById('tHead').innerHTML = headHtml;
+        // 表頭
+        let head = '<th>洞</th>';
+        players.forEach(n => head += `<th>${n}</th>`);
+        document.getElementById('tHead').innerHTML = head;
 
-        // 生成 18 洞
+        // 18洞表格
         const body = document.getElementById('tBody');
         body.innerHTML = '';
         for (let h = 1; h <= 18; h++) {
             const tr = document.createElement('tr');
             let cols = `<td><b>${h}</b></td>`;
             for (let p = 0; p < 4; p++) {
-                const isH = (hdcpMap[h] && hdcpMap[h][p]) ? '<span class="hdcp-mark">讓</span>' : '';
-                cols += `<td><input type="number" class="s-in" data-h="${h}" data-p="${p}" oninput="calc()"> ${isH}</td>`;
+                const isH = (hdcpData[h] && hdcpData[h][p]) ? '<span class="hdcp-indicator">讓</span>' : '';
+                cols += `<td><input type="number" class="score-input" data-h="${h}" data-p="${p}" oninput="calc()"> ${isH}</td>`;
             }
             tr.innerHTML = cols;
             body.appendChild(tr);
@@ -187,46 +182,45 @@
     }
 
     function calc() {
-        const conf = {
+        const cfg = {
             lvg: document.getElementById('chkLvg').checked,
-            lvgMode: document.getElementById('lvgMode').value,
-            lvgFlip: document.getElementById('lvgFlip').checked,
-            best: document.getElementById('chkBest').checked,
-            bestT1: [parseInt(document.getElementById('bestT1_1').value), parseInt(document.getElementById('bestT1_2').value)],
-            skins: document.getElementById('chkSkins').checked,
+            lMode: document.getElementById('vMode').value,
+            lFlip: document.getElementById('vFlip').checked,
+            four: document.getElementById('chkFour').checked,
+            fCarry: document.getElementById('fCarry').checked,
+            fT1: [parseInt(document.getElementById('fP1').value), parseInt(document.getElementById('fP2').value)],
+            skin: document.getElementById('chkSkins').checked,
             sCarry: document.getElementById('sCarry').checked,
             sVal: parseInt(document.getElementById('sVal').value),
-            scr: document.getElementById('chkScr').checked,
-            scrMode: document.getElementById('scrMode').value
+            scr: document.getElementById('chkScr').checked
         };
 
-        let res = [0,1,2,3].map(() => ({ vegas: 0, skins: 0, best: 0, scillag: 0, total: 0 }));
-        let skinPool = 0;
+        let res = [0,1,2,3].map(() => ({ vegas: 0, skins: 0, four: 0, scillag: 0, total: 0 }));
+        let sPool = 0, fPool = 0;
 
         for (let h = 1; h <= 18; h++) {
             let sRaw = [], sNet = [], valid = true;
             for (let p = 0; p < 4; p++) {
-                let v = document.querySelector(`.s-in[data-h="${h}"][data-p="${p}"]`).value;
+                let v = document.querySelector(`.score-input[data-h="${h}"][data-p="${p}"]`).value;
                 if (v === "") { valid = false; break; }
                 let score = parseInt(v);
                 sRaw.push(score);
-                sNet.push(score - ((hdcpMap[h] && hdcpMap[h][p]) ? 1 : 0));
+                sNet.push(score - ((hdcpData[h] && hdcpData[h][p]) ? 1 : 0));
             }
             if (!valid) continue;
 
-            // 總桿累計
             sRaw.forEach((v, i) => res[i].total += v);
 
-            // Las Vegas
-            if (conf.lvg) {
+            // 1. Las Vegas (保留累計分數) 
+            if (cfg.lvg) {
                 let pIdx;
-                if (conf.lvgMode === "6") pIdx = (h<=6) ? [0,1,2,3] : (h<=12 ? [0,2,1,3] : [0,3,1,2]);
-                else if (conf.lvgMode === "9") pIdx = (h<=9) ? [0,1,2,3] : [0,2,1,3];
-                else pIdx = [0,1,2,3]; // 預設手動的第一種分組
+                if (cfg.lMode === "6") pIdx = (h<=6) ? [0,1,2,3] : (h<=12 ? [0,2,1,3] : [0,3,1,2]);
+                else if (cfg.lMode === "9") pIdx = (h<=9) ? [0,1,2,3] : [0,2,1,3];
+                else pIdx = [0,1,2,3];
 
                 let vA = Math.min(sNet[pIdx[0]], sNet[pIdx[1]])*10 + Math.max(sNet[pIdx[0]], sNet[pIdx[1]]);
                 let vB = Math.min(sNet[pIdx[2]], sNet[pIdx[3]])*10 + Math.max(sNet[pIdx[2]], sNet[pIdx[3]]);
-                if (conf.lvgFlip) {
+                if (cfg.lFlip) {
                     if (vA < vB && [sNet[pIdx[0]], sNet[pIdx[1]]].some(s => s <= 3)) vB = (vB%10)*10 + Math.floor(vB/10);
                     else if (vB < vA && [sNet[pIdx[2]], sNet[pIdx[3]]].some(s => s <= 3)) vA = (vA%10)*10 + Math.floor(vA/10);
                 }
@@ -234,26 +228,28 @@
                 res[pIdx[0]].vegas += diff; res[pIdx[1]].vegas += diff; res[pIdx[2]].vegas -= diff; res[pIdx[3]].vegas -= diff;
             }
 
-            // Skins
-            if (conf.skins) {
-                skinPool++;
+            // 2. Skins + Carry Over [cite: 13, 36]
+            if (cfg.skin) {
+                sPool++;
                 let min = Math.min(...sNet);
-                let winners = sNet.map((s, i) => s === min ? i : -1).filter(i => i !== -1);
-                if (winners.length === 1 && sNet[winners[0]] <= conf.sVal) {
-                    res[winners[0]].skins += skinPool; skinPool = 0;
-                } else if (!conf.sCarry) skinPool = 0;
+                let wins = sNet.map((s, i) => s === min ? i : -1).filter(i => i !== -1);
+                if (wins.length === 1 && sNet[wins[0]] <= cfg.sVal) {
+                    res[wins[0]].skins += sPool; sPool = 0;
+                } else if (!cfg.sCarry) sPool = 0;
             }
 
-            // Four Ball
-            if (conf.best) {
-                const t1 = conf.bestT1, t2 = [0,1,2,3].filter(i => !t1.includes(i));
+            // 3. Four Ball + Carry Over 
+            if (cfg.four) {
+                fPool++;
+                const t1 = cfg.fT1, t2 = [0,1,2,3].filter(i => !t1.includes(i));
                 let b1 = Math.min(sNet[t1[0]], sNet[t1[1]]), b2 = Math.min(sNet[t2[0]], sNet[t2[1]]);
-                if (b1 < b2) { res[t1[0]].best++; res[t1[1]].best++; }
-                else if (b2 < b1) { res[t2[0]].best++; res[t2[1]].best++; }
+                if (b1 < b2) { res[t1[0]].four += fPool; res[t1[1]].four += fPool; fPool = 0; }
+                else if (b2 < b1) { res[t2[0]].four += fPool; res[t2[1]].four += fPool; fPool = 0; }
+                else if (!cfg.fCarry) fPool = 0;
             }
 
-            // Scillag (Scratch) - C4取2 全對決邏輯
-            if (conf.scr && conf.scrMode === "all") {
+            // 4. Scillag (Scratch) 全部對決 ($C_4^2$) 
+            if (cfg.scr) {
                 for (let i = 0; i < 4; i++) {
                     for (let j = i + 1; j < 4; j++) {
                         if (sNet[i] < sNet[j]) { res[i].scillag++; res[j].scillag--; }
@@ -268,14 +264,13 @@
             <td>${n}</td>
             <td class="${res[i].vegas>=0?'val-win':'val-lose'}">${res[i].vegas}</td>
             <td class="val-win">${res[i].skins}</td>
-            <td class="val-win">${res[i].best}</td>
+            <td class="val-win">${res[i].four}</td>
             <td class="${res[i].scillag>=0?'val-win':'val-lose'}">${res[i].scillag}</td>
             <td>${res[i].total}</td>
         </tr>`).join('');
     }
 
-    syncNames();
-    renderHdcpGrid();
+    syncSettings();
 </script>
 </body>
 </html>
