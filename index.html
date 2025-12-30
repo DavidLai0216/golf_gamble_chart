@@ -3,37 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>高球博弈終極客製版</title>
+    <title>高爾夫抓抓樂</title>
     <style>
+        /* 字體與視覺強調 */
+        @import url('https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap');
+
         :root { --primary: #1b5e20; --bg: #f0f4f7; --accent: #ef6c00; --win: #d32f2f; --lose: #1976d2; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; font-size: 14px; }
-        .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .hidden { display: none; }
-        h2 { color: var(--primary); font-size: 1.1rem; border-left: 5px solid var(--primary); padding-left: 10px; margin: 0 0 15px 0; }
-        .config-box { background: #f9f9f9; border: 1px solid #ddd; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
-        .player-inputs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 15px; }
-        .player-inputs input { width: 100%; padding: 10px 5px; border: 1px solid #ccc; border-radius: 6px; text-align: center; font-weight: bold; box-sizing: border-box; }
-        select, input[type="text"].small-in { padding: 6px; border-radius: 6px; border: 1px solid #ccc; font-size: 13px; }
-        .btn-confirm { background: var(--primary); color: white; border: none; width: 100%; padding: 18px; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; }
+        body { font-family: -apple-system, "Microsoft JhengHei", sans-serif; background: var(--bg); margin: 0; padding: 10px; font-size: 14px; }
         
-        /* 表格樣式 */
-        .table-wrapper { overflow-x: auto; }
+        /* 大標題樣式 */
+        .main-title { 
+            text-align: center; 
+            font-family: 'ZCOOL KuaiLe', cursive, sans-serif; 
+            font-size: 3rem; 
+            color: var(--primary); 
+            margin: 20px 0; 
+            text-shadow: 3px 3px 0px rgba(27, 94, 32, 0.1), 5px 5px 15px rgba(0,0,0,0.1);
+            letter-spacing: 5px;
+        }
+
+        .card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-top: 5px solid var(--primary); }
+        .hidden { display: none; }
+        h2 { color: var(--primary); font-size: 1.2rem; margin: 0 0 15px 0; display: flex; align-items: center; }
+        h2::before { content: '⛳'; margin-right: 10px; }
+
+        .config-box { background: #f9f9f9; border: 1px solid #ddd; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+        .player-inputs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
+        .player-inputs input { width: 100%; padding: 12px 5px; border: 2px solid #ddd; border-radius: 8px; text-align: center; font-weight: bold; font-size: 15px; }
+        .player-inputs input:focus { border-color: var(--primary); outline: none; }
+
+        select, input[type="text"].small-in { padding: 8px; border-radius: 8px; border: 1px solid #ccc; font-size: 14px; background: white; }
+        .btn-confirm { background: var(--primary); color: white; border: none; width: 100%; padding: 20px; border-radius: 12px; font-size: 1.3rem; font-weight: bold; cursor: pointer; transition: transform 0.2s; }
+        .btn-confirm:active { transform: scale(0.98); }
+
+        /* 成績表格 */
+        .table-wrapper { overflow-x: auto; border-radius: 10px; border: 1px solid #eee; }
         table { width: 100%; border-collapse: collapse; min-width: 600px; }
-        th, td { border: 1px solid #eee; padding: 8px 4px; text-align: center; }
-        th { background: var(--primary); color: white; font-size: 13px; }
-        input[type="number"] { width: 60px; height: 35px; border: 1px solid #bbb; border-radius: 5px; text-align: center; font-size: 18px; font-weight: bold; }
+        th, td { border: 1px solid #eee; padding: 10px 5px; text-align: center; }
+        th { background: var(--primary); color: white; font-weight: 500; }
+        .score-input { width: 60px; height: 40px; border: 2px solid #ddd; border-radius: 6px; text-align: center; font-size: 18px; font-weight: bold; }
         
         /* 結算樣式 */
         .summary-table { width: 100%; border-collapse: collapse; }
-        .summary-table th { background: #455a64; color: white; padding: 8px; font-size: 12px; }
-        .summary-table td { border: 1px solid #eee; padding: 12px 5px; text-align: center; font-weight: bold; }
+        .summary-table th { background: #455a64; color: white; padding: 10px; font-size: 13px; }
+        .summary-table td { border: 1px solid #eee; padding: 15px 5px; text-align: center; font-weight: bold; font-size: 16px; }
         .val-win { color: var(--win); }
         .val-lose { color: var(--lose); }
-        .duel-row { border-bottom: 1px solid #ddd; padding: 8px 0; }
-        .lvg-pair-box { background: white; padding: 8px; border: 1px dashed #ccc; margin-top: 5px; border-radius: 4px; }
+        .duel-row { border-bottom: 2px dashed #eee; padding: 12px 0; }
+        .lvg-pair-box { background: white; padding: 10px; border: 1px solid #ddd; margin-top: 8px; border-radius: 8px; }
     </style>
 </head>
 <body>
+
+<h1 class="main-title">高爾夫抓抓樂</h1>
 
 <div id="setupPage" class="card">
     <h2>1. 確認球員姓名</h2>
@@ -47,8 +69,8 @@
     <h2>2. 遊戲參數與分組設定</h2>
     
     <div class="config-box">
-        <label><input type="checkbox" id="chkLvg" checked> 拉斯維加斯 (Las Vegas)</label>
-        <div style="margin-left:22px; margin-top:5px;">
+        <label style="font-size:16px; font-weight:bold;"><input type="checkbox" id="chkLvg" checked> 拉斯維加斯 (Las Vegas)</label>
+        <div style="margin-left:25px; margin-top:8px;">
             <label><input type="checkbox" id="lvgFlip" checked> 啟用抓鳥翻牌</label><br>
             分組規則：<select id="lvgMode" onchange="toggleLvgPairs()">
                 <option value="fixed">固定 (A+B vs C+D)</option>
@@ -64,18 +86,18 @@
     </div>
 
     <div class="config-box">
-        <label><input type="checkbox" id="chkBest" checked> 四人四球 (Best Ball)</label>
-        <div style="margin-left:22px; margin-top:5px;">
+        <label style="font-size:16px; font-weight:bold;"><input type="checkbox" id="chkBest" checked> 四人四球 (Best Ball)</label>
+        <div style="margin-left:25px; margin-top:8px;">
             <label><input type="checkbox" id="bestCarry" checked> 平手累積 (Carry Over)</label><br>
             第一組：<select id="bestP1" class="n-sel"></select> + <select id="bestP2" class="n-sel"></select>
         </div>
     </div>
 
     <div class="config-box">
-        <label><input type="checkbox" id="chkScr" checked> 史估垃幾 (Scratch)</label>
-        <div style="margin-left:22px; margin-top:5px;">
+        <label style="font-size:16px; font-weight:bold;"><input type="checkbox" id="chkScr" checked> 史估垃幾 (Scratch)</label>
+        <div style="margin-left:25px; margin-top:8px;">
             模式：<select id="scrMode" onchange="toggleScrMode()">
-                <option value="all">全部對決 ($C_4^2$ 六組 PK)</option>
+                <option value="all">全部對決</option>
                 <option value="manual">手動設定單挑對決</option>
             </select>
             <div id="scrManualBox" class="hidden" style="margin-top:10px;">
@@ -85,18 +107,18 @@
     </div>
 
     <div class="config-box">
-        <label><input type="checkbox" id="chkSkins" checked> Skins (斯金茲)</label>
-        <div style="margin-left:22px; margin-top:5px;">
+        <label style="font-size:16px; font-weight:bold;"><input type="checkbox" id="chkSkins" checked> Skins (斯金茲)</label>
+        <div style="margin-left:25px; margin-top:8px;">
             <label><input type="checkbox" id="skinCarry" checked> 平手累積</label> | 
             門檻：<select id="skinVal"><option value="4">Par</option><option value="5">Bogey</option><option value="99">不驗證</option></select>
         </div>
     </div>
 
-    <button class="btn-confirm" onclick="startApp()">確認設定，開始記錄成績 ⛳</button>
+    <button class="btn-confirm" onclick="startApp()">設定完成，開始抓抓樂 ⛳</button>
 </div>
 
 <div id="gamePage" class="hidden">
-    <div class="card" style="padding: 5px;">
+    <div class="card" style="padding: 10px;">
         <div class="table-wrapper">
             <table>
                 <thead><tr id="tHead"></tr></thead>
@@ -112,17 +134,14 @@
             <tbody id="sumBody"></tbody>
         </table>
     </div>
-    <button onclick="location.reload()" style="width:100%; padding:10px; background:#999; color:white; border:none; border-radius:8px;">重新設定遊戲</button>
+    <button onclick="location.reload()" style="width:100%; padding:15px; background:#666; color:white; border:none; border-radius:10px; font-weight:bold;">重新設定遊戲</button>
 </div>
 
 <script>
     let players = [];
     
-    // 初始化同步姓名
     function syncAll() {
         players = [0,1,2,3].map(i => document.getElementById('p'+i).value);
-        
-        // 同步所有下拉選單
         document.querySelectorAll('.n-sel').forEach((sel, idx) => {
             const oldVal = sel.value;
             sel.innerHTML = players.map((name, i) => `<option value="${i}">${name}</option>`).join('');
@@ -130,12 +149,10 @@
             else if (sel.id === "bestP1") sel.value = 0;
             else if (sel.id === "bestP2") sel.value = 1;
         });
-
         toggleLvgPairs();
         renderScrDuels();
     }
 
-    // 拉斯維加斯手動換隊選單
     function toggleLvgPairs() {
         const mode = document.getElementById('lvgMode').value;
         const box = document.getElementById('lvgManualBox');
@@ -154,7 +171,6 @@
         }
     }
 
-    // 史估垃幾手動單挑列表
     function toggleScrMode() {
         document.getElementById('scrManualBox').classList.toggle('hidden', document.getElementById('scrMode').value !== 'manual');
     }
@@ -165,9 +181,9 @@
             let html = '';
             for (let i = 1; i <= 6; i++) {
                 html += `<div class="duel-row">
-                    <b>對決 ${i}：</b> <select class="scr-p1 n-sel-dyn"></select> vs <select class="scr-p2 n-sel-dyn"></select><br>
-                    誰讓誰：<select class="scr-giver n-sel-dyn"></select> 讓 <select class="scr-rec n-sel-dyn"></select><br>
-                    讓桿洞號 (如 1,3,9)：<input type="text" class="scr-h small-in" style="width:120px;" placeholder="手動輸入洞號">
+                    <b>對決 ${i}：</b> <select class="scr-p1 n-sel-dyn"></select> 對 <select class="scr-p2 n-sel-dyn"></select><br>
+                    受讓：<select class="scr-rec n-sel-dyn"></select> 獲讓 1 桿<br>
+                    讓桿洞號：<input type="text" class="scr-h small-in" style="width:150px;" placeholder="例如: 1,3,9,15">
                 </div>`;
             }
             list.innerHTML = html;
@@ -179,7 +195,6 @@
         });
     }
 
-    // 開始遊戲
     function startApp() {
         let headHtml = '<th>洞</th>';
         players.forEach(name => headHtml += `<th>${name}</th>`);
@@ -199,10 +214,10 @@
 
         document.getElementById('setupPage').classList.add('hidden');
         document.getElementById('gamePage').classList.remove('hidden');
+        window.scrollTo(0,0);
         calc();
     }
 
-    // 核心計算
     function calc() {
         const cfg = {
             lvg: document.getElementById('chkLvg').checked, lMode: document.getElementById('lvgMode').value, lFlip: document.getElementById('lvgFlip').checked,
@@ -225,29 +240,27 @@
 
             scores.forEach((s, i) => res[i].total += s);
 
-            // 1. Las Vegas
             if (cfg.lvg) {
-                let pIdx;
-                if (cfg.lMode === 'fixed') pIdx = [0,1,2,3];
+                let p;
+                if (cfg.lMode === 'fixed') p = [0,1,2,3];
                 else {
                     const bIdx = cfg.lMode === "6" ? Math.ceil(h/6) : Math.ceil(h/9);
                     const sel1 = document.querySelector(`#lvgP${bIdx} .lv-p1`).value;
                     const sel2 = document.querySelector(`#lvgP${bIdx} .lv-p2`).value;
                     const t1 = [parseInt(sel1), parseInt(sel2)];
                     const t2 = [0,1,2,3].filter(i => !t1.includes(i));
-                    pIdx = [...t1, ...t2];
+                    p = [...t1, ...t2];
                 }
-                let vA = Math.min(scores[pIdx[0]], scores[pIdx[1]])*10 + Math.max(scores[pIdx[0]], scores[pIdx[1]]);
-                let vB = Math.min(scores[pIdx[2]], scores[pIdx[3]])*10 + Math.max(scores[pIdx[2]], scores[pIdx[3]]);
+                let vA = Math.min(scores[p[0]], scores[p[1]])*10 + Math.max(scores[p[0]], scores[p[1]]);
+                let vB = Math.min(scores[p[2]], scores[p[3]])*10 + Math.max(scores[p[2]], scores[p[3]]);
                 if (cfg.lFlip) {
-                    if (vA < vB && [scores[pIdx[0]], scores[pIdx[1]]].some(s => s <= 3)) vB = (vB%10)*10 + Math.floor(vB/10);
-                    else if (vB < vA && [scores[pIdx[2]], scores[pIdx[3]]].some(s => s <= 3)) vA = (vA%10)*10 + Math.floor(vA/10);
+                    if (vA < vB && [scores[p[0]], scores[p[1]]].some(s => s <= 3)) vB = (vB%10)*10 + Math.floor(vB/10);
+                    else if (vB < vA && [scores[p[2]], scores[p[3]]].some(s => s <= 3)) vA = (vA%10)*10 + Math.floor(vA/10);
                 }
                 let diff = vB - vA;
-                res[pIdx[0]].vegas += diff; res[pIdx[1]].vegas += diff; res[pIdx[2]].vegas -= diff; res[pIdx[3]].vegas -= diff;
+                res[p[0]].vegas += diff; res[p[1]].vegas += diff; res[p[2]].vegas -= diff; res[p[3]].vegas -= diff;
             }
 
-            // 2. Best Ball
             if (cfg.best) {
                 bPool++;
                 let t1 = cfg.bT1, t2 = [0,1,2,3].filter(i => !t1.includes(i));
@@ -257,17 +270,18 @@
                 else if (!cfg.bCarry) bPool = 0;
             }
 
-            // 3. Scratch (史估垃幾)
             if (cfg.scr) {
                 if (cfg.sMode === 'all') {
                     for(let i=0; i<4; i++) for(let j=i+1; j<4; j++) {
                         if(scores[i] < scores[j]) { res[i].scr++; res[j].scr--; }
-                        else if(scores[j] < scores[i]) { res[j].scr++; res[i].scr--; }
+                        else if(scores[j] < scores[i]) { res[i].scr--; res[j].scr++; }
                     }
                 } else {
                     document.querySelectorAll('.duel-row').forEach(row => {
-                        const p1 = parseInt(row.querySelector('.scr-p1').value), p2 = parseInt(row.querySelector('.scr-p2').value);
-                        const rec = parseInt(row.querySelector('.scr-rec').value), hList = row.querySelector('.scr-h').value.split(',').map(s=>s.trim());
+                        const p1 = parseInt(row.querySelector('.scr-p1').value);
+                        const p2 = parseInt(row.querySelector('.scr-p2').value);
+                        const rec = parseInt(row.querySelector('.scr-rec').value);
+                        const hList = row.querySelector('.scr-h').value.split(',').map(s=>s.trim());
                         if (p1 !== -1 && p2 !== -1) {
                             let n1 = scores[p1], n2 = scores[p2];
                             if (hList.includes(h.toString())) {
@@ -280,7 +294,6 @@
                 }
             }
 
-            // 4. Skins
             if (cfg.skin) {
                 skPool++;
                 let min = Math.min(...scores);
@@ -301,7 +314,6 @@
         </tr>`).join('');
     }
 
-    // 初始化
     syncAll();
 </script>
 </body>
