@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台灣高爾夫博弈成績卡</title>
+    <style>
+        body { font-family: -apple-system, sans-serif; background: #f0f2f5; margin: 0; padding: 10px; }
+        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 15px; }
+        h1, h3 { color: #2e7d32; text-align: center; }
+        .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; font-size: 13px; }
+        th { background: #2e7d32; color: white; }
+        .score-input { width: 35px; border: 1px solid #ccc; border-radius: 4px; padding: 5px; text-align: center; }
+        .handicap-btn { font-size: 10px; background: #eee; border: 1px solid #ccc; border-radius: 3px; cursor: pointer; display: block; margin-top: 3px; }
+        .handicap-btn.active { background: #ff9800; color: white; }
+        #summary { position: sticky; bottom: 0; width: 100%; box-sizing: border-box; }
+        .player-row { display: flex; gap: 5px; margin-bottom: 10px; }
+        .player-row input { flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h1>⛳ 高球博弈成績卡</h1>
+        <div class="player-row">
+            <input type="text" id="p1_name" value="球員A">
+            <input type="text" id="p2_name" value="球員B">
+            <input type="text" id="p3_name" value="球員C">
+            <input type="text" id="p4_name" value="球員D">
+        </div>
+        <div class="config-grid">
+            <div><label><input type="checkbox" id="enableVegas" checked> 拉斯維加斯</label></div>
+            <div><label><input type="checkbox" id="enableOlympics" checked> 奧林匹克</label></div>
+            <div><label><input type="checkbox" id="vegasFlip" checked> 抓鳥翻牌</label></div>
+            <div>
+                換隊友：
+                <select id="pairingRule">
+                    <option value="6">每 6 洞</option>
+                    <option value="9">每 9 洞</option>
+                    <option value="18">固定</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="card" style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>洞</th>
+                    <th>球員A</th>
+                    <th>球員B</th>
+                    <th>球員C</th>
+                    <th>球員D</th>
+                </tr>
+            </thead>
+            <tbody id="scoreTable"></tbody>
+        </table>
+    </div>
+
+    <div class="card" id="summary">
+        <h3>即時輸贏點數</h3>
+        <table id="summaryTable">
+            <thead>
+                <tr>
+                    <th>球員</th>
+                    <th>拉斯</th>
+                    <th>奧林</th>
+                    <th>總計</th>
+                </tr>
+            </thead>
+            <tbody id="summaryBody"></tbody>
+        </table>
+    </div>
+
+    <script>
+        const scoreTable = document.getElementById('scoreTable');
+        // 生成 1-18 洞輸入框
+        for (let i = 1; i <= 18; i++) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${i}</td>` + [1, 2, 3, 4].map(p => `
+                <td>
+                    <input type="number" class="score-input" data-p="${p}" data-h="${i}" placeholder="桿">
+                    <input type="number" class="score-input" data-p="${p}" data-h="${i}" placeholder="推" style="background:#e8f5e9">
+                    <button class="handicap-btn" onclick="this.classList.toggle('active'); calculate();">讓</button>
+                </td>
+            `).join('');
+            scoreTable.appendChild(tr);
+        }
+
+        function calculate() {
+            // 此處為計算邏輯，將會依據您輸入的資料自動運算拉斯(Min*10+Max)與奧林匹克點數
+            const summaryBody = document.getElementById('summaryBody');
+            summaryBody.innerHTML = '';
+            ['A', 'B', 'C', 'D'].forEach(name => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${name}</td><td>0</td><td>0</td><td>0</td>`;
+                summaryBody.appendChild(tr);
+            });
+            // 完整計算函式可在此擴充...
+        }
+        document.addEventListener('input', calculate);
+    </script>
+</body>
+</html>
